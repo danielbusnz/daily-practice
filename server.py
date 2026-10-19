@@ -5,7 +5,8 @@ Runs at login via ~/Library/LaunchAgents/com.daniel.practicetimer.plist (Mac) or
 the practicetimer.service systemd user unit (Linux) on http://127.0.0.1:5910. Clicking a site on the page POSTs /start?group=...,
 which starts a timer for that group (if one isn't already running) and shows
 a notification when it starts and an alert with a sound when it ends. Each task
-has a check mark for the day (POST /done?task=...&done=1|0), stored in done.json.
+has a check mark for the day (POST /done?task=...&done=1|0), stored in done.json,
+and the sections can be dragged into a new order (POST /order?tasks=a,b,c), stored in order.json.
 """
 
 import json
@@ -56,6 +57,7 @@ FILES = {"/latex-cheatsheet.pdf": (os.path.expanduser("~/upenn/5920/latex-symbol
 
 STATE = os.path.join(HERE, "timers.json")  # running timers, so restarts and reboots keep them
 DONE = os.path.join(HERE, "done.json")  # today's check marks; they reset each day
+ORDER = os.path.join(HERE, "order.json")  # the order the page shows the tasks in
 TASKS = ["jobs"] + list(GROUPS)
 
 timers = {}  # group -> {"end": epoch seconds, "cancel": threading.Event}
@@ -205,11 +207,28 @@ def set_done(task, done):
             json.dump({"date": today(), "done": marks}, f)
 
 
+def load_order():
+    try:
+        with open(ORDER) as f:
+            saved = [t for t in json.load(f) if t in TASKS]
+    except (OSError, ValueError, TypeError):
+        saved = []
+    return saved + [t for t in TASKS if t not in saved]
+
+
+def set_order(tasks):
+    tasks = [t for t in tasks if t in TASKS]
+    with lock:
+        with open(ORDER, "w") as f:
+            json.dump(tasks + [t for t in TASKS if t not in tasks], f)
+
+
 def status():
     now = time.time()
     with lock:
         return {
             "date": today(),
+            "order": load_order(),
             "groups": {
                 k: {
                     "label": g["label"],
@@ -256,6 +275,9 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/handshake":
             open_handshake()
             return self._send(200, {"opened": "handshake"})
+        if u.path == "/order":
+            set_order(parse_qs(u.query).get("tasks", [""])[0].split(","))
+            return self._send(200, status())
         if u.path == "/done":
             q = parse_qs(u.query)
             task = q.get("task", [""])[0]

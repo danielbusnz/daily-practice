@@ -18,7 +18,8 @@
   h1 { font-size: 1.8rem; margin: 0; }
   .sub { color: var(--muted); margin: 4px 0 24px; }
   section { margin-top: 24px; }
-  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .head { display: flex; align-items: center; gap: 12px; }
+  .head label { flex: 1; }
   h2 { font-size: 1.1rem; margin: 0 0 8px; }
   .timer { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; gap: 8px; align-items: center; }
   .timer.on { color: var(--run); font-weight: 600; }
@@ -31,6 +32,10 @@
   .url { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); overflow-wrap: anywhere; }
   .off { color: var(--muted); font-size: 13px; }
   .head label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .grip { color: var(--muted); cursor: grab; user-select: none; font-size: 18px; line-height: 1; padding: 0 6px 0 0; letter-spacing: -3px; touch-action: none; }
+  .grip:hover { color: var(--ink); }
+  section.dragging { opacity: 0.4; }
+  section.over { box-shadow: 0 -2px 0 0 var(--accent); }
   .head input { width: 17px; height: 17px; margin: 0; accent-color: var(--run); cursor: pointer; }
   section.done h2 { color: var(--muted); text-decoration: line-through; }
   section.done ol { opacity: 0.55; }
@@ -41,18 +46,19 @@
 <body>
 <main>
   <h1>Daily Practice</h1>
-  <p class="sub">Warm-up, flashcards, coding, math, then chess. Opening a site starts its timer on this computer.</p>
+  <p class="sub">Work down the list. Opening a site starts its timer on this computer.</p>
   <p class="progress" id="progress"></p>
+  <div id="tasks">
 
   <section data-task="jobs">
-    <div class="head"><label><input type="checkbox" data-done="jobs"><h2>Jobs</h2></label></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="jobs"><h2>Jobs</h2></label></div>
     <ol>
       <li><a class="site" data-action="handshake" href="#"><div class="name">Handshake: find SWE jobs</div><div class="url">Opens Claude in a terminal; an agent builds the shortlist, then you pick what to apply to</div></a></li>
     </ol>
   </section>
 
   <section data-group="typing" data-task="typing">
-    <div class="head"><label><input type="checkbox" data-done="typing"><h2>1. Typing</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="typing"><h2>1. Typing</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://monkeytype.com/"><div class="name">Monkeytype</div><div class="url">monkeytype.com</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.typingtom.com/programming/typing-test/1m"><div class="name">Typing Tom: Coding Typing Test (1 min)</div><div class="url">typingtom.com/programming/typing-test/1m</div></a></li>
@@ -60,21 +66,21 @@
   </section>
 
   <section data-group="vim" data-task="vim">
-    <div class="head"><label><input type="checkbox" data-done="vim"><h2>2. Vim</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="vim"><h2>2. Vim</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.vim-hero.com/practice"><div class="name">VimHero Practice</div><div class="url">vim-hero.com/practice</div></a></li>
     </ol>
   </section>
 
   <section data-group="anki" data-task="anki">
-    <div class="head"><label><input type="checkbox" data-done="anki"><h2>3. Flashcards</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="anki"><h2>3. Flashcards</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" data-app="anki" href="#"><div class="name">Anki</div><div class="url">Opens the Anki app on this computer</div></a></li>
     </ol>
   </section>
 
   <section data-group="coding" data-task="coding">
-    <div class="head"><label><input type="checkbox" data-done="coding"><h2>4. Coding</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="coding"><h2>4. Coding</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx"><div class="name">LeetCode Pattern Atlas</div><div class="url">claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://codingbat.com/java"><div class="name">CodingBat Java</div><div class="url">codingbat.com/java</div></a></li>
@@ -83,7 +89,7 @@
   </section>
 
   <section data-group="math" data-task="math">
-    <div class="head"><label><input type="checkbox" data-done="math"><h2>5. Math</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="math"><h2>5. Math</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.deep-ml.com/deep-path"><div class="name">Deep-ML: Deep-Path</div><div class="url">deep-ml.com/deep-path</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.compscilib.com/search/discrete-math"><div class="name">CompSciLib: Discrete Math</div><div class="url">compscilib.com/search/discrete-math</div></a></li>
@@ -92,7 +98,7 @@
   </section>
 
   <section data-group="chess" data-task="chess">
-    <div class="head"><label><input type="checkbox" data-done="chess"><h2>6. Chess</h2></label><span class="timer"></span></div>
+    <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="chess"><h2>6. Chess</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.chess.com/home"><div class="name">Chess.com</div><div class="url">chess.com</div></a></li>
     </ol>
@@ -115,6 +121,89 @@
   function saveLocalDone() {
     try { localStorage.setItem("done", JSON.stringify({ date: today(), done })); } catch (_) {}
   }
+
+  // ---- Task order: drag the handle; saved on the server, or in localStorage on the static site.
+  const list = document.getElementById("tasks");
+  const sections = () => [...list.querySelectorAll("section[data-task]")];
+  let order = sections().map((s) => s.dataset.task);
+
+  function loadLocalOrder() {
+    try { return JSON.parse(localStorage.getItem("order") || "null") || order; } catch (_) { return order; }
+  }
+
+  function applyOrder(tasks) {
+    const known = sections();
+    const want = tasks.filter((t) => known.some((s) => s.dataset.task === t));
+    known.forEach((s) => { if (!want.includes(s.dataset.task)) want.push(s.dataset.task); });
+    order = want;
+    want.forEach((t) => list.appendChild(known.find((s) => s.dataset.task === t)));
+    let n = 0;
+    sections().forEach((s) => {
+      const h = s.querySelector("h2");
+      const base = h.textContent.replace(/^\d+\.\s*/, "");
+      h.textContent = s.dataset.group ? `${++n}. ${base}` : base;
+    });
+  }
+
+  async function saveOrder() {
+    order = sections().map((s) => s.dataset.task);
+    if (serverOk) {
+      try { await fetch(`/order?tasks=${order.join(",")}`, { method: "POST" }); } catch (_) {}
+    } else {
+      try { localStorage.setItem("order", JSON.stringify(order)); } catch (_) {}
+    }
+  }
+
+  let dragging = null;
+  list.addEventListener("mousedown", (e) => { const g = e.target.closest(".grip"); if (g) g.closest("section").draggable = true; });
+  list.addEventListener("dragstart", (e) => {
+    dragging = e.target.closest("section");
+    if (!dragging || !dragging.draggable) { e.preventDefault(); return; }
+    dragging.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", dragging.dataset.task); } catch (_) {}
+  });
+  list.addEventListener("dragover", (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const over = e.target.closest("section");
+    sections().forEach((s) => s.classList.remove("over"));
+    if (!over || over === dragging) return;
+    over.classList.add("over");
+    const r = over.getBoundingClientRect();
+    if (e.clientY < r.top + r.height / 2) list.insertBefore(dragging, over);
+    else list.insertBefore(dragging, over.nextSibling);
+  });
+  list.addEventListener("dragend", () => {
+    if (!dragging) return;
+    dragging.classList.remove("dragging");
+    dragging.draggable = false;
+    sections().forEach((s) => s.classList.remove("over"));
+    dragging = null;
+    applyOrder(sections().map((s) => s.dataset.task));
+    saveOrder();
+  });
+
+  // Touch: move the section with the finger.
+  list.addEventListener("touchstart", (e) => {
+    const g = e.target.closest(".grip"); if (!g) return;
+    dragging = g.closest("section"); dragging.classList.add("dragging");
+  }, { passive: true });
+  list.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const over = document.elementFromPoint(t.clientX, t.clientY)?.closest("section");
+    if (!over || over === dragging) return;
+    const r = over.getBoundingClientRect();
+    if (t.clientY < r.top + r.height / 2) list.insertBefore(dragging, over);
+    else list.insertBefore(dragging, over.nextSibling);
+  }, { passive: false });
+  list.addEventListener("touchend", () => {
+    if (!dragging) return;
+    dragging.classList.remove("dragging"); dragging = null;
+    applyOrder(sections().map((s) => s.dataset.task)); saveOrder();
+  });
 
   function paintDone() {
     const boxes = document.querySelectorAll("[data-done]");
@@ -149,9 +238,10 @@
     try {
       const s = await (await fetch("/status")).json();
       state = s.groups; done = s.done; serverOk = true;
+      if (!dragging && s.order && s.order.join() !== order.join()) applyOrder(s.order);
       paint(); paintDone();
     } catch (_) {
-      if (!serverOk) { done = loadLocalDone(); paintDone(); }
+      if (!serverOk) { done = loadLocalDone(); applyOrder(loadLocalOrder()); paintDone(); }
     }
   }
 
