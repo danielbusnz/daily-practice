@@ -42,7 +42,8 @@ APPS = {"anki": {"mac": "Anki",
 # The Jobs button opens a Claude Code session in a terminal that runs the job-search skill:
 # /handshake on the Mac (~/.claude/skills/handshake), /jobhunt on Linux (~/.claude/skills/jobhunt).
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
-PROJECT = os.path.dirname(HERE)
+# Where the Claude session runs: the Mac skill lives with the practice page; the Linux one reads ~/job_search.
+PROJECT = os.path.dirname(HERE) if MAC else os.path.expanduser("~/job_search")
 HANDSHAKE_PROMPT = (
     "/handshake Build a fresh SWE internship and new-grad shortlist, pre-select every resume-only Handshake role, and ask me once to submit them all."
     if MAC else "/jobhunt"
@@ -119,9 +120,11 @@ def open_handshake():
         cmd = f"cd '{PROJECT}' && '{CLAUDE}' --chrome '{HANDSHAKE_PROMPT}'"
         osascript(f'tell application "Terminal"\nactivate\ndo script "{cmd}"\nend tell')
     elif LINUX_TERMINAL:
-        quiet([LINUX_TERMINAL, "--directory", PROJECT, CLAUDE, "--chrome", HANDSHAKE_PROMPT]
-              if LINUX_TERMINAL in ("kitty",) else
-              [LINUX_TERMINAL, "-e", CLAUDE, "--chrome", HANDSHAKE_PROMPT])
+        if LINUX_TERMINAL == "kitty":
+            cmd = ["kitty", "--title", "Job hunt", "--directory", PROJECT, CLAUDE, "--chrome", HANDSHAKE_PROMPT]
+        else:
+            cmd = [LINUX_TERMINAL, "-e", CLAUDE, "--chrome", HANDSHAKE_PROMPT]
+        subprocess.Popen(cmd, cwd=PROJECT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def run_timer(group, end, cancel):
