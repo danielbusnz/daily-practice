@@ -4,7 +4,8 @@
 Runs at login via ~/Library/LaunchAgents/com.daniel.practicetimer.plist (Mac) or
 the practicetimer.service systemd user unit (Linux) on http://127.0.0.1:5910. Clicking a site on the page POSTs /start?group=...,
 which starts a timer for that group (if one isn't already running) and shows
-a macOS notification when it starts and an alert with a sound when it ends.
+a notification when it starts and an alert with a sound when it ends. Each task
+has a check mark for the day (POST /done?task=...&done=1|0), stored in done.json.
 """
 
 import json
@@ -53,6 +54,8 @@ LINUX_TERMINAL = next((t for t in ("kitty", "alacritty", "foot", "gnome-terminal
 FILES = {"/latex-cheatsheet.pdf": (os.path.expanduser("~/upenn/5920/latex-symbols-cheatsheet.pdf"), "application/pdf")}
 
 STATE = os.path.join(HERE, "timers.json")  # running timers, so restarts and reboots keep them
+DONE = os.path.join(HERE, "done.json")  # today's check marks; they reset each day
+TASKS = ["jobs"] + list(GROUPS)
 
 timers = {}  # group -> {"end": epoch seconds, "cancel": threading.Event}
 lock = threading.Lock()
@@ -172,16 +175,47 @@ def stop(group):
     return bool(t)
 
 
+def today():
+    return time.strftime("%Y-%m-%d")
+
+
+def load_done():
+    # Call with lock held. Check marks from a previous day are dropped.
+    try:
+        with open(DONE) as f:
+            saved = json.load(f)
+        if saved.get("date") == today():
+            return [t for t in saved.get("done", []) if t in TASKS]
+    except (OSError, ValueError, AttributeError):
+        pass
+    return []
+
+
+def set_done(task, done):
+    with lock:
+        marks = load_done()
+        if done and task not in marks:
+            marks.append(task)
+        if not done and task in marks:
+            marks.remove(task)
+        with open(DONE, "w") as f:
+            json.dump({"date": today(), "done": marks}, f)
+
+
 def status():
     now = time.time()
     with lock:
         return {
-            k: {
-                "label": g["label"],
-                "minutes": g["minutes"],
-                "remaining": max(0, int(timers[k]["end"] - now)) if k in timers else None,
-            }
-            for k, g in GROUPS.items()
+            "date": today(),
+            "groups": {
+                k: {
+                    "label": g["label"],
+                    "minutes": g["minutes"],
+                    "remaining": max(0, int(timers[k]["end"] - now)) if k in timers else None,
+                }
+                for k, g in GROUPS.items()
+            },
+            "done": {t: t in load_done() for t in TASKS},
         }
 
 
@@ -219,6 +253,13 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/handshake":
             open_handshake()
             return self._send(200, {"opened": "handshake"})
+        if u.path == "/done":
+            q = parse_qs(u.query)
+            task = q.get("task", [""])[0]
+            if task not in TASKS:
+                return self._send(400, {"error": f"unknown task {task!r}"})
+            set_done(task, q.get("done", ["1"])[0] == "1")
+            return self._send(200, status())
         group = parse_qs(u.query).get("group", [""])[0]
         if group not in GROUPS:
             return self._send(400, {"error": f"unknown group {group!r}"})

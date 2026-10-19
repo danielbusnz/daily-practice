@@ -30,44 +30,51 @@
   .name { font-weight: 600; color: var(--accent); }
   .url { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); overflow-wrap: anywhere; }
   .off { color: var(--muted); font-size: 13px; }
+  .head label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .head input { width: 17px; height: 17px; margin: 0; accent-color: var(--run); cursor: pointer; }
+  section.done h2 { color: var(--muted); text-decoration: line-through; }
+  section.done ol { opacity: 0.55; }
+  .progress { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+  .progress.all { color: var(--run); font-weight: 600; }
 </style>
 </head>
 <body>
 <main>
   <h1>Daily Practice</h1>
   <p class="sub">Warm-up, flashcards, coding, math, then chess. Opening a site starts its timer on this computer.</p>
+  <p class="progress" id="progress"></p>
 
-  <section>
-    <div class="head"><h2>Jobs</h2></div>
+  <section data-task="jobs">
+    <div class="head"><label><input type="checkbox" data-done="jobs"><h2>Jobs</h2></label></div>
     <ol>
       <li><a class="site" data-action="handshake" href="#"><div class="name">Handshake: find SWE jobs</div><div class="url">Opens Claude in a terminal; an agent builds the shortlist, then you pick what to apply to</div></a></li>
     </ol>
   </section>
 
-  <section data-group="typing">
-    <div class="head"><h2>1. Typing</h2><span class="timer"></span></div>
+  <section data-group="typing" data-task="typing">
+    <div class="head"><label><input type="checkbox" data-done="typing"><h2>1. Typing</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://monkeytype.com/"><div class="name">Monkeytype</div><div class="url">monkeytype.com</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.typingtom.com/programming/typing-test/1m"><div class="name">Typing Tom: Coding Typing Test (1 min)</div><div class="url">typingtom.com/programming/typing-test/1m</div></a></li>
     </ol>
   </section>
 
-  <section data-group="vim">
-    <div class="head"><h2>2. Vim</h2><span class="timer"></span></div>
+  <section data-group="vim" data-task="vim">
+    <div class="head"><label><input type="checkbox" data-done="vim"><h2>2. Vim</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.vim-hero.com/practice"><div class="name">VimHero Practice</div><div class="url">vim-hero.com/practice</div></a></li>
     </ol>
   </section>
 
-  <section data-group="anki">
-    <div class="head"><h2>3. Flashcards</h2><span class="timer"></span></div>
+  <section data-group="anki" data-task="anki">
+    <div class="head"><label><input type="checkbox" data-done="anki"><h2>3. Flashcards</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" data-app="anki" href="#"><div class="name">Anki</div><div class="url">Opens the Anki app on this computer</div></a></li>
     </ol>
   </section>
 
-  <section data-group="coding">
-    <div class="head"><h2>4. Coding</h2><span class="timer"></span></div>
+  <section data-group="coding" data-task="coding">
+    <div class="head"><label><input type="checkbox" data-done="coding"><h2>4. Coding</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx"><div class="name">LeetCode Pattern Atlas</div><div class="url">claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://codingbat.com/java"><div class="name">CodingBat Java</div><div class="url">codingbat.com/java</div></a></li>
@@ -75,8 +82,8 @@
     </ol>
   </section>
 
-  <section data-group="math">
-    <div class="head"><h2>5. Math</h2><span class="timer"></span></div>
+  <section data-group="math" data-task="math">
+    <div class="head"><label><input type="checkbox" data-done="math"><h2>5. Math</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.deep-ml.com/deep-path"><div class="name">Deep-ML: Deep-Path</div><div class="url">deep-ml.com/deep-path</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.compscilib.com/search/discrete-math"><div class="name">CompSciLib: Discrete Math</div><div class="url">compscilib.com/search/discrete-math</div></a></li>
@@ -84,8 +91,8 @@
     </ol>
   </section>
 
-  <section data-group="chess">
-    <div class="head"><h2>6. Chess</h2><span class="timer"></span></div>
+  <section data-group="chess" data-task="chess">
+    <div class="head"><label><input type="checkbox" data-done="chess"><h2>6. Chess</h2></label><span class="timer"></span></div>
     <ol>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.chess.com/home"><div class="name">Chess.com</div><div class="url">chess.com</div></a></li>
     </ol>
@@ -94,7 +101,34 @@
 
 <script>
   const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-  let state = {};
+  let state = {};        // timers from /status (empty on the static site)
+  let done = {};         // task -> true, for today
+  let serverOk = false;  // false on GitHub Pages: check marks then live in localStorage
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  function loadLocalDone() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("done") || "{}");
+      return saved.date === today() ? saved.done || {} : {};
+    } catch (_) { return {}; }
+  }
+  function saveLocalDone() {
+    try { localStorage.setItem("done", JSON.stringify({ date: today(), done })); } catch (_) {}
+  }
+
+  function paintDone() {
+    const boxes = document.querySelectorAll("[data-done]");
+    let n = 0;
+    boxes.forEach((box) => {
+      const on = !!done[box.dataset.done];
+      box.checked = on;
+      box.closest("section").classList.toggle("done", on);
+      if (on) n++;
+    });
+    const p = document.getElementById("progress");
+    p.textContent = n === boxes.length ? "All done for today." : `${n} of ${boxes.length} done today`;
+    p.className = n === boxes.length ? "progress all" : "progress";
+  }
 
   function paint() {
     document.querySelectorAll("section[data-group]").forEach((sec) => {
@@ -112,8 +146,26 @@
   }
 
   async function refresh() {
-    try { state = await (await fetch("/status")).json(); paint(); } catch (_) {}
+    try {
+      const s = await (await fetch("/status")).json();
+      state = s.groups; done = s.done; serverOk = true;
+      paint(); paintDone();
+    } catch (_) {
+      if (!serverOk) { done = loadLocalDone(); paintDone(); }
+    }
   }
+
+  document.addEventListener("change", async (e) => {
+    const box = e.target.closest("[data-done]");
+    if (!box) return;
+    done[box.dataset.done] = box.checked;
+    paintDone();
+    if (serverOk) {
+      try { await fetch(`/done?task=${box.dataset.done}&done=${box.checked ? 1 : 0}`, { method: "POST" }); } catch (_) {}
+    } else {
+      saveLocalDone();
+    }
+  });
 
   document.addEventListener("click", async (e) => {
     const stopBtn = e.target.closest("[data-stop]");
