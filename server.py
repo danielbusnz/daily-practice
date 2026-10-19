@@ -49,6 +49,9 @@ HANDSHAKE_PROMPT = (
 LINUX_SOUND = "/usr/share/sounds/freedesktop/stereo/complete.oga"
 LINUX_TERMINAL = next((t for t in ("kitty", "alacritty", "foot", "gnome-terminal", "konsole") if shutil.which(t)), None)
 
+# Local files the page links to (served only if present on this machine).
+FILES = {"/latex-cheatsheet.pdf": (os.path.expanduser("~/upenn/5920/latex-symbols-cheatsheet.pdf"), "application/pdf")}
+
 STATE = os.path.join(HERE, "timers.json")  # running timers, so restarts and reboots keep them
 
 timers = {}  # group -> {"end": epoch seconds, "cancel": threading.Event}
@@ -199,6 +202,9 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, f.read(), "text/html; charset=utf-8")
         elif path == "/status":
             self._send(200, status())
+        elif path in FILES and os.path.exists(FILES[path][0]):
+            with open(FILES[path][0], "rb") as f:
+                self._send(200, f.read(), FILES[path][1])
         else:
             self._send(404, {"error": "not found"})
 
