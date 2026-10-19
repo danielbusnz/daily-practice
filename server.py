@@ -261,6 +261,10 @@ class Handler(BaseHTTPRequestHandler):
         elif path in FILES and os.path.exists(FILES[path][0]):
             with open(FILES[path][0], "rb") as f:
                 self._send(200, f.read(), FILES[path][1])
+        elif path.endswith(".user.js") and "/" not in path[1:] and os.path.exists(os.path.join(HERE, path[1:])):
+            # Opening one of these URLs makes Tampermonkey show its install page.
+            with open(os.path.join(HERE, path[1:]), "rb") as f:
+                self._send(200, f.read(), "text/javascript; charset=utf-8")
         else:
             self._send(404, {"error": "not found"})
 
