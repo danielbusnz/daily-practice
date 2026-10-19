@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         LeetCode + Codewars: jk to Escape
+// @name         LeetCode + Codewars + CodingBat: jk to Escape
 // @namespace    daniel.practice.jk
-// @version      1.1
-// @description  In the LeetCode (Monaco) and Codewars (CodeMirror) code editors, typing "jk" quickly in insert mode leaves insert mode, like Vim's `inoremap jk <Esc>`. Needs Vim keybindings on in each site's editor settings.
+// @version      1.2
+// @description  In the LeetCode (Monaco), Codewars (CodeMirror) and CodingBat (Ace) code editors, typing "jk" quickly in insert mode leaves insert mode, like Vim's `inoremap jk <Esc>`. LeetCode/Codewars need Vim keybindings on in their editor settings; on CodingBat the script turns Ace's Vim mode on itself.
 // @match        https://leetcode.com/*
 // @match        https://www.codewars.com/*
+// @match        https://codingbat.com/*
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
@@ -12,6 +13,33 @@
   "use strict";
   const WINDOW_MS = 400; // "j" then "k" within this many ms counts as Escape; type slower to write "jk" literally.
   let pending = null;    // set after a "j" that was actually inserted (so we are in insert mode)
+
+  // --- CodingBat: Ace editor. It ships Ace's Vim keybinding but never turns it on, so do that and map jk natively. ---
+  if (location.hostname === "codingbat.com") {
+    let tries = 0;
+    const timer = setInterval(() => {
+      const editor = document.ace_editor;
+      const ace = window.ace;
+      if (!editor || !ace || ++tries > 100) { if (tries > 100) clearInterval(timer); return; }
+      clearInterval(timer);
+      const enable = () => {
+        try {
+          const Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
+          Vim.map("jk", "<Esc>", "insert");
+          try { Vim.setOption("insertModeEscKeysTimeout", WINDOW_MS); } catch (_) {}
+          editor.setKeyboardHandler("ace/keyboard/vim");
+        } catch (err) { console.warn("jk-escape: could not enable Vim on CodingBat", err); }
+      };
+      let loaded = null;
+      try { loaded = ace.require("ace/keyboard/vim"); } catch (_) {}
+      if (loaded) { enable(); return; }
+      const s = document.createElement("script");
+      s.src = "https://codingbat.com/ace/keybinding-vim.js";
+      s.onload = enable;
+      document.head.appendChild(s);
+    }, 100);
+    return;
+  }
 
   function key(target, k, code) {
     const kc = code === "Escape" ? 27 : 8;
