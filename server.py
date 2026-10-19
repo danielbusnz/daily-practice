@@ -33,8 +33,10 @@ GROUPS = {
 
 MAC = sys.platform == "darwin"
 
-# Apps the page can open (they have no web link). Mac name -> Linux command.
-APPS = {"anki": {"mac": "Anki", "linux": ["anki"]}}
+# Apps the page can open (they have no web link). Mac name -> Linux command
+# (native binary if installed, otherwise the Flathub package).
+APPS = {"anki": {"mac": "Anki",
+                 "linux": ["anki"] if shutil.which("anki") else ["flatpak", "run", "net.ankiweb.Anki"]}}
 
 # The Jobs button opens a Claude Code session in a terminal that runs the job-search skill:
 # /handshake on the Mac (~/.claude/skills/handshake), /jobhunt on Linux (~/.claude/skills/jobhunt).
