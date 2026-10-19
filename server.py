@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Daily Practice helper: serves the practice page and runs Mac timers.
+"""Daily Practice helper: serves the practice page and runs desktop timers (macOS or Linux).
 
-Runs at login via ~/Library/LaunchAgents/com.daniel.practicetimer.plist on
-http://127.0.0.1:5910. Clicking a site on the page POSTs /start?group=...,
+Runs at login via ~/Library/LaunchAgents/com.daniel.practicetimer.plist (Mac) or
+the practicetimer.service systemd user unit (Linux) on http://127.0.0.1:5910. Clicking a site on the page POSTs /start?group=...,
 which starts a timer for that group (if one isn't already running) and shows
 a macOS notification when it starts and an alert with a sound when it ends.
 """
 
 import json
 import os
+import shutil
 import subprocess
+import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -29,14 +31,21 @@ GROUPS = {
     "chess": {"label": "Chess", "minutes": 30},
 }
 
-# Mac apps the page can open (they have no web link).
-APPS = {"anki": "Anki"}
+MAC = sys.platform == "darwin"
 
-# The Jobs button opens a Claude Code session in Terminal that runs the handshake skill
-# (~/.claude/skills/handshake): an agent builds the shortlist, then you pick what to apply to.
+# Apps the page can open (they have no web link). Mac name -> Linux command.
+APPS = {"anki": {"mac": "Anki", "linux": ["anki"]}}
+
+# The Jobs button opens a Claude Code session in a terminal that runs the job-search skill:
+# /handshake on the Mac (~/.claude/skills/handshake), /jobhunt on Linux (~/.claude/skills/jobhunt).
 CLAUDE = os.path.expanduser("~/.local/bin/claude")
 PROJECT = os.path.dirname(HERE)
-HANDSHAKE_PROMPT = "/handshake Build a fresh SWE internship and new-grad shortlist, pre-select every resume-only Handshake role, and ask me once to submit them all."
+HANDSHAKE_PROMPT = (
+    "/handshake Build a fresh SWE internship and new-grad shortlist, pre-select every resume-only Handshake role, and ask me once to submit them all."
+    if MAC else "/jobhunt"
+)
+LINUX_SOUND = "/usr/share/sounds/freedesktop/stereo/complete.oga"
+LINUX_TERMINAL = next((t for t in ("kitty", "alacritty", "foot", "gnome-terminal", "konsole") if shutil.which(t)), None)
 
 STATE = os.path.join(HERE, "timers.json")  # running timers, so restarts and reboots keep them
 
@@ -50,22 +59,61 @@ def persist():
         json.dump({k: t["end"] for k, t in timers.items()}, f)
 
 
+def quiet(cmd):
+    try:
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        pass
+
+
 def osascript(script):
-    subprocess.Popen(["osascript", "-e", script],
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    quiet(["osascript", "-e", script])
+
+
+def play_sound():
+    if MAC:
+        quiet(["afplay", "/System/Library/Sounds/Glass.aiff"])
+    elif shutil.which("pw-play"):
+        quiet(["pw-play", LINUX_SOUND])
+    elif shutil.which("paplay"):
+        quiet(["paplay", LINUX_SOUND])
 
 
 def notify(title, text):
-    osascript(f'display notification "{text}" with title "{title}" sound name "Glass"')
+    if MAC:
+        osascript(f'display notification "{text}" with title "{title}" sound name "Glass"')
+    else:
+        quiet(["notify-send", "-a", "Daily Practice", title, text])
+        play_sound()
 
 
 def finish(group):
     g = GROUPS[group]
-    subprocess.Popen(["afplay", "/System/Library/Sounds/Glass.aiff"])
-    osascript(
-        f'display alert "{g["label"]} time is up" '
-        f'message "{g["minutes"]} minutes done." giving up after 600'
-    )
+    play_sound()
+    title, text = f'{g["label"]} time is up', f'{g["minutes"]} minutes done.'
+    if MAC:
+        osascript(f'display alert "{title}" message "{text}" giving up after 600')
+    else:
+        quiet(["notify-send", "-a", "Daily Practice", "-u", "critical", title, text])
+        if shutil.which("zenity"):
+            quiet(["zenity", "--info", "--timeout=600", f"--title={title}", f"--text={text}"])
+
+
+def open_app(app):
+    if MAC:
+        quiet(["open", "-a", APPS[app]["mac"]])
+    else:
+        quiet(APPS[app]["linux"])
+
+
+def open_handshake():
+    if MAC:
+        cmd = f"cd '{PROJECT}' && '{CLAUDE}' --chrome '{HANDSHAKE_PROMPT}'"
+        osascript(f'tell application "Terminal"\nactivate\ndo script "{cmd}"\nend tell')
+    elif LINUX_TERMINAL:
+        quiet([LINUX_TERMINAL, "--directory", PROJECT, CLAUDE, "--chrome", HANDSHAKE_PROMPT]
+              if LINUX_TERMINAL in ("kitty",) else
+              [LINUX_TERMINAL, "-e", CLAUDE, "--chrome", HANDSHAKE_PROMPT])
 
 
 def run_timer(group, end, cancel):
@@ -158,11 +206,10 @@ class Handler(BaseHTTPRequestHandler):
             app = parse_qs(u.query).get("app", [""])[0]
             if app not in APPS:
                 return self._send(400, {"error": f"unknown app {app!r}"})
-            subprocess.Popen(["open", "-a", APPS[app]])
-            return self._send(200, {"opened": APPS[app]})
+            open_app(app)
+            return self._send(200, {"opened": app})
         if u.path == "/handshake":
-            cmd = f"cd '{PROJECT}' && '{CLAUDE}' --chrome '{HANDSHAKE_PROMPT}'"
-            osascript(f'tell application "Terminal"\nactivate\ndo script "{cmd}"\nend tell')
+            open_handshake()
             return self._send(200, {"opened": "handshake"})
         group = parse_qs(u.query).get("group", [""])[0]
         if group not in GROUPS:
