@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Practice</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #fff; --ink: #18202b; --muted: #5d6878; --line: #dde2e9;
+    --accent: #1f5f8b; --run: #1f8a5b; --run-bg: #e2f4ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #11151b; --surface: #181d25; --ink: #e4e8ee; --muted: #949fb0; --line: #2a313c;
+            --accent: #7db7e0; --run: #4cc38a; --run-bg: #163126; color-scheme: dark; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.8rem; margin: 0; }
+  .sub { color: var(--muted); margin: 4px 0 24px; }
+  section { margin-top: 24px; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  h2 { font-size: 1.1rem; margin: 0 0 8px; }
+  .timer { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; gap: 8px; align-items: center; }
+  .timer.on { color: var(--run); font-weight: 600; }
+  .timer button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  a.site { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; text-decoration: none; color: inherit; }
+  a.site:hover { border-color: var(--accent); }
+  a.site:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .name { font-weight: 600; color: var(--accent); }
+  .url { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); overflow-wrap: anywhere; }
+  .off { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Daily Practice</h1>
+  <p class="sub">Warm-up, flashcards, coding, math, then chess. Opening a site starts its timer on your Mac.</p>
+
+  <section>
+    <div class="head"><h2>Jobs</h2></div>
+    <ol>
+      <li><a class="site" data-action="handshake" href="#"><div class="name">Handshake: find SWE jobs</div><div class="url">Opens Claude in Terminal; an agent builds the shortlist, then you pick what to apply to</div></a></li>
+    </ol>
+  </section>
+
+  <section data-group="typing">
+    <div class="head"><h2>1. Typing</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" target="_blank" rel="noopener" href="https://monkeytype.com/"><div class="name">Monkeytype</div><div class="url">monkeytype.com</div></a></li>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.typingtom.com/programming/typing-test/1m"><div class="name">Typing Tom: Coding Typing Test (1 min)</div><div class="url">typingtom.com/programming/typing-test/1m</div></a></li>
+    </ol>
+  </section>
+
+  <section data-group="vim">
+    <div class="head"><h2>2. Vim</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.vim-hero.com/practice"><div class="name">VimHero Practice</div><div class="url">vim-hero.com/practice</div></a></li>
+    </ol>
+  </section>
+
+  <section data-group="anki">
+    <div class="head"><h2>3. Flashcards</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" data-app="anki" href="#"><div class="name">Anki</div><div class="url">Opens the Anki app on this Mac</div></a></li>
+    </ol>
+  </section>
+
+  <section data-group="coding">
+    <div class="head"><h2>4. Coding</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" target="_blank" rel="noopener" href="https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx"><div class="name">LeetCode Pattern Atlas</div><div class="url">claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx</div></a></li>
+      <li><a class="site" target="_blank" rel="noopener" href="https://codingbat.com/java"><div class="name">CodingBat Java</div><div class="url">codingbat.com/java</div></a></li>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.codewars.com/dashboard"><div class="name">Codewars</div><div class="url">codewars.com/dashboard</div></a></li>
+    </ol>
+  </section>
+
+  <section data-group="math">
+    <div class="head"><h2>5. Math</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.deep-ml.com/deep-path"><div class="name">Deep-ML: Deep-Path</div><div class="url">deep-ml.com/deep-path</div></a></li>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.compscilib.com/search/discrete-math"><div class="name">CompSciLib: Discrete Math</div><div class="url">compscilib.com/search/discrete-math</div></a></li>
+      <li><div class="off">LaTeX symbols cheat sheet: on your Linux machine, not on this Mac</div></li>
+    </ol>
+  </section>
+
+  <section data-group="chess">
+    <div class="head"><h2>6. Chess</h2><span class="timer"></span></div>
+    <ol>
+      <li><a class="site" target="_blank" rel="noopener" href="https://www.chess.com/home"><div class="name">Chess.com</div><div class="url">chess.com</div></a></li>
+    </ol>
+  </section>
+</main>
+
+<script>
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  let state = {};
+
+  function paint() {
+    document.querySelectorAll("section[data-group]").forEach((sec) => {
+      const g = state[sec.dataset.group];
+      const el = sec.querySelector(".timer");
+      if (!g) { el.textContent = ""; return; }
+      if (g.remaining == null) {
+        el.className = "timer";
+        el.textContent = `${g.minutes} min`;
+      } else {
+        el.className = "timer on";
+        el.innerHTML = `${fmt(g.remaining)} left <button type="button" data-stop="${sec.dataset.group}">Stop</button>`;
+      }
+    });
+  }
+
+  async function refresh() {
+    try { state = await (await fetch("/status")).json(); paint(); } catch (_) {}
+  }
+
+  document.addEventListener("click", async (e) => {
+    const stopBtn = e.target.closest("[data-stop]");
+    if (stopBtn) { await fetch(`/stop?group=${stopBtn.dataset.stop}`, { method: "POST" }); return refresh(); }
+    const a = e.target.closest("a.site");
+    if (!a) return;
+    if (a.dataset.action === "handshake") {
+      // No timer: the helper opens a Claude session in Terminal.
+      e.preventDefault();
+      try { await fetch("/handshake", { method: "POST" }); } catch (_) {}
+      return;
+    }
+    if (a.dataset.app) {
+      // Mac apps (Anki) are opened by the helper, not the browser.
+      e.preventDefault();
+      try { await fetch(`/open?app=${a.dataset.app}`, { method: "POST" }); } catch (_) {}
+    }
+    // The link itself opens the new tab (target="_blank"), so Vimium hints and Cmd-click work too.
+    startTimer(a);
+  });
+  // Middle-click opens a tab without firing "click".
+  document.addEventListener("auxclick", (e) => {
+    const a = e.button === 1 && e.target.closest("a.site");
+    if (a) startTimer(a);
+  });
+
+  async function startTimer(a) {
+    const group = a.closest("section").dataset.group;
+    try { await fetch(`/start?group=${group}`, { method: "POST", keepalive: true }); } catch (_) {}
+    refresh();
+  }
+
+  // Count down locally between server checks.
+  setInterval(() => {
+    Object.values(state).forEach((g) => { if (g.remaining != null && g.remaining > 0) g.remaining--; });
+    paint();
+  }, 1000);
+  setInterval(refresh, 15000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+  refresh();
+</script>
+</body>
+</html>
