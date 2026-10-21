@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Daily Practice Timer
 // @namespace    daniel.practice.timer
-// @version      1.0
+// @version      1.1
 // @description  Shows a countdown on practice sites: Typing 5 min, Vim 5 min, Coding 60 min, Math 60 min. Counts only while a tab is visible; resets each day.
 // @match        https://monkeytype.com/*
 // @match        https://www.typingtom.com/*
@@ -11,7 +11,6 @@
 // @match        https://neetcode.io/*
 // @match        https://codingbat.com/*
 // @match        https://www.codewars.com/*
-// @match        https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx*
 // @match        https://www.deep-ml.com/*
 // @match        https://www.compscilib.com/*
 // @grant        GM_getValue
@@ -29,7 +28,7 @@
   const GROUPS = {
     typing: { label: 'Typing', minutes: 5,  hosts: ['monkeytype.com', 'www.typingtom.com'] },
     vim:    { label: 'Vim',    minutes: 5,  hosts: ['www.vim-hero.com', 'vim-hero.com'] },
-    coding: { label: 'Coding', minutes: 60, hosts: ['leetcode.com', 'neetcode.io', 'codingbat.com', 'www.codewars.com', 'claude.ai'] },
+    coding: { label: 'Coding', minutes: 60, hosts: ['leetcode.com', 'neetcode.io', 'codingbat.com', 'www.codewars.com'] },
     math:   { label: 'Math',   minutes: 60, hosts: ['www.deep-ml.com', 'www.compscilib.com'] },
   };
 
