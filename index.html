@@ -82,7 +82,7 @@
   <section data-group="coding" data-task="coding">
     <div class="head"><span class="grip" title="Drag to reorder">⋮⋮</span><label><input type="checkbox" data-done="coding"><h2>4. Coding</h2></label><span class="timer"></span></div>
     <ol>
-      <li><a class="site" target="_blank" rel="noopener" href="https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx"><div class="name">LeetCode Pattern Atlas</div><div class="url">claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx</div></a></li>
+      <li><a class="site" data-notimer target="_blank" rel="noopener" href="https://claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx"><div class="name">LeetCode Pattern Atlas</div><div class="url">claude.ai/artifact/5EeSfFvAAFvs1VCKUZ12qx</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://codingbat.com/java"><div class="name">CodingBat Java</div><div class="url">codingbat.com/java</div></a></li>
       <li><a class="site" target="_blank" rel="noopener" href="https://www.codewars.com/dashboard"><div class="name">Codewars</div><div class="url">codewars.com/dashboard</div></a></li>
     </ol>
@@ -283,6 +283,7 @@
   });
 
   async function startTimer(a) {
+    if ("notimer" in a.dataset) return; // links that open without starting the group's timer
     const group = a.closest("section").dataset.group;
     try { await fetch(`/start?group=${group}`, { method: "POST", keepalive: true }); } catch (_) {}
     refresh();
